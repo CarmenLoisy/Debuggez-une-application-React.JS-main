@@ -19,6 +19,7 @@ export const api = {
 export const DataProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
+  const [last, setLast] = useState();
   const getData = useCallback(async () => {
     try {
       setData(await api.loadData());
@@ -27,9 +28,14 @@ export const DataProvider = ({ children }) => {
     }
   }, []);
   useEffect(() => {
-    if (data) return;
+    if (!data || !data.events) { // Si data ou data.events n'existe pas, on appelle getData()
     getData();
-  });
+		return;
+	}
+	const dataCopy = [...data.events]; // copie de data.events, pour classer du plus au moins récent
+    dataCopy.sort((a, b) => (a.date < b.date ? 1 : -1));
+    setLast(dataCopy[0]); // set du state last avec l'event le plus récent du tableau dataCopy
+  }, [data, getData]); // appel du hook useEffect à chaque modification de data ou getData
   
   return (
     <DataContext.Provider
@@ -37,6 +43,7 @@ export const DataProvider = ({ children }) => {
       value={{
         data,
         error,
+		last, // Ajout de last dans le context pour le récupérer dans la page Home
       }}
     >
       {children}
