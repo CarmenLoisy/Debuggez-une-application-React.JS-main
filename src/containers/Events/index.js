@@ -11,21 +11,15 @@ const PER_PAGE = 9;
 
 const EventList = () => {
   const { data, error } = useData();
-  const [type, setType] = useState();
+  const [type, setType] = useState(null);  // Déclaration de l'état pour le type d'événement filtré
   const [currentPage, setCurrentPage] = useState(1);
-  const filteredEvents = (
-    (!type
-      ? data?.events
-      : data?.events) || []
-  ).filter((event, index) => {
-    if (
-      (currentPage - 1) * PER_PAGE <= index &&
-      PER_PAGE * currentPage > index
-    ) {
-      return true;
-    }
-    return false;
-  });
+  const filteredEvents = (() => { // Filtrage des événements en fonction du type sélectionné
+    if (!data || !data.events) return [];     // Vérification de l'existence des données et des événements.
+    return data.events.filter((event) => !type || event.type === type).slice(    // Filtrage des événements en fonction du type sélectionné ou affichage de tous les événements.
+      (currentPage - 1) * PER_PAGE,      // Pagination : sélection des événements pour la page actuelle.
+      currentPage * PER_PAGE
+    );
+  })();
   const changeType = (evtType) => {
     setCurrentPage(1);
     setType(evtType);
